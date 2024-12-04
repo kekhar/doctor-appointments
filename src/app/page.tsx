@@ -10,9 +10,10 @@ export default function Page() {
   const [patientName, setPatientName] = useState("");
   const [patientBirthDate, setPatientBirthDate] = useState("");
   const [appointmentDateTime, setAppointmentDateTime] = useState("");
+  const [notification, setNotification] = useState("");
 
   useEffect(() => {
-    // Загружаем список специальности с сервера
+    // Загружаем список специальностей с сервера
     fetch("/api/staff")
       .then((response) => response.json())
       .then((data) => setStaff(data));
@@ -24,6 +25,8 @@ export default function Page() {
       fetch(`/api/doctors?staffId=${selectedStaff}`)
         .then((response) => response.json())
         .then((data) => setDoctors(data));
+    } else {
+      setDoctors([]); // Сбрасываем список врачей, если сотрудник не выбран
     }
   }, [selectedStaff]);
 
@@ -44,20 +47,35 @@ export default function Page() {
       .then((response) => response.json())
       .then((data) => {
         console.log("Запись создана:", data);
-        // Очистить форму после успешной отправки
+        setNotification("Запись успешно создана!");
         setPatientName("");
         setPatientBirthDate("");
         setAppointmentDateTime("");
         setSelectedStaff("");
         setSelectedDoctor("");
         setDoctors([]);
+
+        // Скрываем уведомление через 3 секунды
+        setTimeout(() => setNotification(""), 3000);
       })
-      .catch((error) => console.error("Ошибка при отправке:", error));
+      .catch((error) => {
+        console.error("Ошибка при отправке:", error);
+        setNotification("Произошла ошибка. Попробуйте снова.");
+        setTimeout(() => setNotification(""), 3000);
+      });
   };
 
   return (
     <div className="flex flex-col items-center py-10 bg-gray-900 min-h-screen text-white">
       <h1 className="text-2xl font-bold mb-6">Записаться на прием</h1>
+
+      {/* Уведомление */}
+      {notification && (
+        <div className="mb-4 p-3 bg-green-500 text-white rounded">
+          {notification}
+        </div>
+      )}
+
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md p-6 bg-gray-800 rounded shadow-md"
@@ -111,7 +129,7 @@ export default function Page() {
             disabled={!selectedStaff}
             className="w-full p-2 rounded bg-gray-700 text-white"
           >
-            {!selectedDoctor && <option value="">ФИО врача</option>}
+            {!selectedDoctor && <option value="">Выберите врача</option>}
             {doctors.map((doctor) => (
               <option key={doctor.id} value={doctor.id}>
                 {doctor.name}

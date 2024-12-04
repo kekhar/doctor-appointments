@@ -36,7 +36,6 @@ app.get('/api/doctors', (req, res) => {
         console.error('Ошибка при получении врачей:', err.message);
         return res.status(500).json({ error: 'Ошибка при получении врачей' });
       }
-      console.log(rows);
       return res.json(rows);
     });
   } else {
